@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 public enum PromotionType {
     ROOM_MOST_POPULAR("ROOM_MOST_POPULAR", "Most Popular Room"),
-    MOVIE_MOST_POPULAR("MOVIE_MOST_POPULAR", "Most Popular Movie"),
+    MOVIE_MOST_POPULAR("DISH_MOST_POPULAR", "Most Popular Dish"),
     CLIENT_MOST_FREQUENT("CLIENT_MOST_FREQUENT", "Frequent Client");
 
     private final String code;
