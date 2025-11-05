@@ -18,6 +18,7 @@ public interface ReviewsRepositoryMapper {
     ReviewsRepositoryMapper INSTANCE = Mappers.getMapper(ReviewsRepositoryMapper.class);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "roomRating", source = "roomRating.value")
     @Mapping(target = "movieRating", source = "movieRating.value")
     ReviewEntity toEntity(Review review);
@@ -35,7 +36,8 @@ public interface ReviewsRepositoryMapper {
                 entity.getMovieId(),
                 Rating.of(entity.getRoomRating()),
                 Rating.of(entity.getMovieRating()),
-                entity.getComment());
+                entity.getComment(),
+                entity.getCreatedAt());
     }
 
     default List<Review> toDomain(List<ReviewEntity> entities) {

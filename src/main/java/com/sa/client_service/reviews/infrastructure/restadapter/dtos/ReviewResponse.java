@@ -1,5 +1,6 @@
 package com.sa.client_service.reviews.infrastructure.restadapter.dtos;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,4 +33,7 @@ public class ReviewResponse {
 
     @Schema(description = "Comentario del cliente")
     private String comment;
+
+    @Schema(description = "Fecha de creación de la reseña", type = "string", format = "date-time")
+    private LocalDateTime createdAt;
 }
