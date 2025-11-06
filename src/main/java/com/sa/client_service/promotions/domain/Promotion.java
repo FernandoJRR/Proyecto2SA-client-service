@@ -13,31 +13,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Promotion {
+    private UUID id;
     private BigDecimal percentage;
     private LocalDate startDate;
     private LocalDate endDate;
     private String name;
-    private UUID cinemaId;
+    private UUID establishmentId;
+    private EstablishmentTypeEnum establishmentType;
     private Integer topCount;
     private PromotionType promotionType;
     private PromotionTargetType promotionTargetType;
 
-    public Promotion(UUID id, BigDecimal percentage, LocalDate startDate, LocalDate endDate,
-            String name, UUID establishmentId, Integer topCount, PromotionType promotionType,
-            PromotionTargetType promotionTargetType) {
-        this.percentage = percentage;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.promotionType = promotionType;
-        this.name = name;
-        this.cinemaId = establishmentId;
-        this.topCount = topCount;
-    }
-
     public static Promotion create(BigDecimal percentage, LocalDate startDate, LocalDate endDate,
-            String name, UUID establishmentId, Integer topCount, PromotionType promotionType,
-            PromotionTargetType promotionTargetType) {
+            String name, UUID establishmentId, EstablishmentTypeEnum establishmentType, Integer topCount,
+            PromotionType promotionType, PromotionTargetType promotionTargetType) {
         return new Promotion(UUID.randomUUID(), percentage, startDate, endDate,
-        name, establishmentId, topCount, promotionType, promotionTargetType);
+                name, establishmentId, establishmentType, topCount, promotionType, promotionTargetType);
     }
 }

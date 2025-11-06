@@ -42,7 +42,7 @@ public class CreatePromotionDTO {
     @NotBlank(message = "El nombre de la promocion es obligatorio")
     private String name;
 
-    @NotBlank(message = "El contador de top de la promocion es obligatorio")
+    @NotNull(message = "El contador de top de la promocion es obligatorio")
     @Min(value = 1, message = "El contador puede tener como minimo el valor de 1")
     @Max(value = 10, message = "El contador puede tener como minimo el valor de 10")
     private Integer topCount;
