@@ -8,6 +8,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -68,6 +69,7 @@ public class ReviewController {
     })
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CLIENT') or hasRole('CINEMA_ADMIN') or hasRole('SPONSOR')")
     public ReviewResponse createReview(@Valid @RequestBody CreateReviewRequest request) {
         CreateReviewDTO dto = ReviewsRestMapper.INSTANCE.toCreateReviewDTO(request);
         return ReviewsRestMapper.INSTANCE.toReviewResponse(createReviewInputPort.handle(dto));
@@ -78,6 +80,7 @@ public class ReviewController {
             @ApiResponse(responseCode = "200", description = "Reseñas recuperadas correctamente")
     })
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CLIENT') or hasRole('CINEMA_ADMIN') or hasRole('SPONSOR')")
     public List<ReviewResponse> findReviews(@ParameterObject FindReviewsRequest request) {
         FindReviewsDTO filters = ReviewsRestMapper.INSTANCE.toFindReviewsDTO(request);
         return ReviewsRestMapper.INSTANCE.toReviewResponses(findReviewsInputPort.handle(filters));

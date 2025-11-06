@@ -11,6 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import com.sa.client_service.promotions.application.dtos.CreatePromotionDTO;
 import com.sa.client_service.promotions.application.inputports.CreatePromotionInputPort;
 import com.sa.client_service.promotions.application.outputports.CreatePromotionOutputPort;
+import com.sa.client_service.promotions.domain.EstablishmentTypeEnum;
 import com.sa.client_service.promotions.domain.Promotion;
 import com.sa.client_service.promotions.domain.PromotionTargetType;
 import com.sa.client_service.promotions.domain.PromotionType;
@@ -39,30 +40,35 @@ public class CreatePromotionUseCase implements CreatePromotionInputPort {
             throw new InvalidParameterException("El tipo de promocion ingresada no existe");
         }
 
-        PromotionTargetType promotionTargetType;
-        //There only has to be promotion target if the promotion type is client
-        if (promotionType.equals(PromotionType.CLIENT_MOST_FREQUENT)
-            && createPromotionDTO.getPromotionTargetType() != null) {
+        PromotionTargetType promotionTargetType = null;
+        if (promotionType.equals(PromotionType.CLIENT_MOST_FREQUENT)) {
+            if (createPromotionDTO.getPromotionTargetType() == null) {
+                throw new InvalidParameterException("El objetivo de la promocion es obligatorio para promociones de clientes");
+            }
             try {
                 promotionTargetType = PromotionTargetType.valueOf(createPromotionDTO.getPromotionTargetType());
             } catch (IllegalArgumentException e) {
-                throw new InvalidParameterException("El tipo de promocion ingresada no existe");
+                throw new InvalidParameterException("El objetivo de promocion ingresado no existe");
             }
-        } else {
-            throw new InvalidParameterException("El objetivo de la promocion solo es aplicable para promociones de clientes");
         }
 
-        System.out.println("AQUIIII");
+        EstablishmentTypeEnum establishmentType;
+        try {
+            establishmentType = EstablishmentTypeEnum.valueOf(createPromotionDTO.getEstablishmentType());
+        } catch (IllegalArgumentException e) {
+            throw new InvalidParameterException("El tipo de establecimiento ingresado no existe");
+        }
+
         Promotion createdPromotion = Promotion.create(
             createPromotionDTO.getPercentage(),
             createPromotionDTO.getStartDate(),
             createPromotionDTO.getEndDate(),
             createPromotionDTO.getName(),
             UUID.fromString(createPromotionDTO.getEstablishmentId()),
+            establishmentType,
             createPromotionDTO.getTopCount(),
             promotionType,
             promotionTargetType);
-        System.out.println("PAASAAAA");
 
         return createPromotionOutputPort.createPromotion(createdPromotion);
     }
