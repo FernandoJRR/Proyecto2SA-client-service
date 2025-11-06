@@ -1,10 +1,13 @@
 package com.sa.client_service.reviews.infrastructure.persistenceadapter.adapters;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
 import com.sa.client_service.reviews.application.dtos.FindReviewsDTO;
+import com.sa.client_service.reviews.application.outputports.FindReviewsByRoomIdPeriodPort;
 import com.sa.client_service.reviews.application.outputports.FindReviewsOutputPort;
 import com.sa.client_service.reviews.domain.Review;
 import com.sa.client_service.reviews.infrastructure.persistenceadapter.mappers.ReviewsRepositoryMapper;
@@ -15,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class FindReviewsAdapter implements FindReviewsOutputPort {
+public class FindReviewsAdapter implements FindReviewsOutputPort, FindReviewsByRoomIdPeriodPort {
 
     private static final ReviewsRepositoryMapper MAPPER = ReviewsRepositoryMapper.INSTANCE;
 
@@ -29,6 +32,12 @@ public class FindReviewsAdapter implements FindReviewsOutputPort {
                 dto.getMovieId(),
                 dto.getClientId());
         return MAPPER.toDomain(entities);
+    }
+
+    @Override
+    public List<Review> findReviewsByRoomIdPeriod(LocalDate starDate, LocalDate enDate, UUID roomId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findReviewsByRoomIdPeriod'");
     }
 
 }
