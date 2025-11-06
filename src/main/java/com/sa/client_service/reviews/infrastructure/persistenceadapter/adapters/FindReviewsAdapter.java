@@ -1,10 +1,13 @@
 package com.sa.client_service.reviews.infrastructure.persistenceadapter.adapters;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.sa.client_service.reviews.application.dtos.FindReviewsDTO;
 import com.sa.client_service.reviews.application.outputports.FindReviewsByRoomIdPeriodPort;
@@ -34,10 +37,17 @@ public class FindReviewsAdapter implements FindReviewsOutputPort, FindReviewsByR
         return MAPPER.toDomain(entities);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
+    @Transactional(readOnly = true)
     public List<Review> findReviewsByRoomIdPeriod(LocalDate starDate, LocalDate enDate, UUID roomId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findReviewsByRoomIdPeriod'");
+
+        LocalDateTime startDateTime = starDate != null ? starDate.atStartOfDay() : null;
+        LocalDateTime endDateTime = enDate != null ? enDate.atTime(LocalTime.MAX) : null;
+
+        return MAPPER.toDomain(reviewsRepository.findByRoomIdAndDateRange(startDateTime, endDateTime, roomId));
     }
 
 }

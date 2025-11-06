@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sa.client_service.reviews.application.inputports.GetCinemaAdminCommentReportPort;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Component
 public class GetCinemaAdminCommentReportUseCase implements GetCinemaAdminCommentReportPort {
 
     private final FindReviewsByRoomIdPeriodPort byRoomIdPeriodPort;

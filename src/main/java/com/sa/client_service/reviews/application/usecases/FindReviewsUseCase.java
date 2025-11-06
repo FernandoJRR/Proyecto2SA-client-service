@@ -1,7 +1,6 @@
 package com.sa.client_service.reviews.application.usecases;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 

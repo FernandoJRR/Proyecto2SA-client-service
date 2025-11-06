@@ -23,9 +23,11 @@ import com.sa.client_service.reviews.application.inputports.CreateReviewInputPor
 import com.sa.client_service.reviews.application.inputports.FindReviewsInputPort;
 import com.sa.client_service.reviews.application.inputports.GetCinemaAdminCommentReportPort;
 import com.sa.client_service.reviews.domain.Review;
+import com.sa.client_service.reviews.infrastructure.restadapter.dtos.CommentReportResponse;
 import com.sa.client_service.reviews.infrastructure.restadapter.dtos.CreateReviewRequest;
 import com.sa.client_service.reviews.infrastructure.restadapter.dtos.FindReviewsRequest;
 import com.sa.client_service.reviews.infrastructure.restadapter.dtos.ReviewResponse;
+import com.sa.client_service.reviews.infrastructure.restadapter.mappers.ReviewReportResponseMapper;
 import com.sa.client_service.reviews.infrastructure.restadapter.mappers.ReviewsRestMapper;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,46 +45,48 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Reseñas", description = "Operaciones para la gestión de reseñas")
 public class ReviewController {
 
-    private final CreateReviewInputPort createReviewInputPort;
-    private final FindReviewsInputPort findReviewsInputPort;
-    private final GetCinemaAdminCommentReportPort getCinemaAdminCommentReportPort;
+        private final CreateReviewInputPort createReviewInputPort;
+        private final FindReviewsInputPort findReviewsInputPort;
+        private final GetCinemaAdminCommentReportPort getCinemaAdminCommentReportPort;
+        private final ReviewReportResponseMapper reportResponseMapper;
 
-    @Operation(summary = "Obtener reporte de comentarios de salas de cine", description = "Devuelve los comentarios registrados dentro de un intervalo de fechas, "
-            + "con la opción de filtrar por una sala específica.", security = {
-                    @SecurityRequirement(name = "bearerAuth") })
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Reporte de comentarios generado correctamente")   
-    })
-    @GetMapping("/report/comments")
-    public List<ReviewResponse> getCinemaAdminCommentReport(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(required = false) UUID roomId) {
+        @Operation(summary = "Obtener reporte de comentarios de salas de cine", description = "Devuelve los comentarios registrados dentro de un intervalo de fechas, "
+                        + "con la opción de filtrar por una sala específica.", security = {
+                                        @SecurityRequirement(name = "bearerAuth") })
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Reporte de comentarios generado correctamente")
+        })
+        @GetMapping("/report/comments")
+        public List<CommentReportResponse> getCinemaAdminCommentReport(
+                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                        @RequestParam(required = false) UUID roomId) {
 
-        List<Review> reviews = getCinemaAdminCommentReportPort.getCinemaAdminCommentReport(startDate, endDate, roomId);
-        return ReviewsRestMapper.INSTANCE.toReviewResponses(reviews);
-    }
+                List<Review> reviews = getCinemaAdminCommentReportPort.getCinemaAdminCommentReport(startDate, endDate,
+                                roomId);
+                return reportResponseMapper.toReviewResponse(reviews);
+        }
 
-    @Operation(summary = "Crear una nueva reseña")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Reseña creada correctamente")
-    })
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('ADMIN') or hasRole('CLIENT') or hasRole('CINEMA_ADMIN') or hasRole('SPONSOR')")
-    public ReviewResponse createReview(@Valid @RequestBody CreateReviewRequest request) {
-        CreateReviewDTO dto = ReviewsRestMapper.INSTANCE.toCreateReviewDTO(request);
-        return ReviewsRestMapper.INSTANCE.toReviewResponse(createReviewInputPort.handle(dto));
-    }
+        @Operation(summary = "Crear una nueva reseña")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "201", description = "Reseña creada correctamente")
+        })
+        @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+        @ResponseStatus(HttpStatus.CREATED)
+        @PreAuthorize("hasRole('ADMIN') or hasRole('CLIENT') or hasRole('CINEMA_ADMIN') or hasRole('SPONSOR')")
+        public ReviewResponse createReview(@Valid @RequestBody CreateReviewRequest request) {
+                CreateReviewDTO dto = ReviewsRestMapper.INSTANCE.toCreateReviewDTO(request);
+                return ReviewsRestMapper.INSTANCE.toReviewResponse(createReviewInputPort.handle(dto));
+        }
 
-    @Operation(summary = "Listar reseñas por filtros opcionales")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Reseñas recuperadas correctamente")
-    })
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('CLIENT') or hasRole('CINEMA_ADMIN') or hasRole('SPONSOR')")
-    public List<ReviewResponse> findReviews(@ParameterObject FindReviewsRequest request) {
-        FindReviewsDTO filters = ReviewsRestMapper.INSTANCE.toFindReviewsDTO(request);
-        return ReviewsRestMapper.INSTANCE.toReviewResponses(findReviewsInputPort.handle(filters));
-    }
+        @Operation(summary = "Listar reseñas por filtros opcionales")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Reseñas recuperadas correctamente")
+        })
+        @GetMapping
+        @PreAuthorize("hasRole('ADMIN') or hasRole('CLIENT') or hasRole('CINEMA_ADMIN') or hasRole('SPONSOR')")
+        public List<ReviewResponse> findReviews(@ParameterObject FindReviewsRequest request) {
+                FindReviewsDTO filters = ReviewsRestMapper.INSTANCE.toFindReviewsDTO(request);
+                return ReviewsRestMapper.INSTANCE.toReviewResponses(findReviewsInputPort.handle(filters));
+        }
 }
