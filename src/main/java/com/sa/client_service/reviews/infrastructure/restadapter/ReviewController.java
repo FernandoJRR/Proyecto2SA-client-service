@@ -110,7 +110,7 @@ public class ReviewController {
                                         @SecurityRequirement(name = "bearerAuth") })
         @ApiResponses({ @ApiResponse(responseCode = "200", description = "Reporte generado correctamente") })
         @GetMapping("/export/rooms/most-commented")
-        @PreAuthorize("hasRole('CINEMA_ADMIN')")
+        @PreAuthorize("hasRole('ADMIN')")
         public ResponseEntity<byte[]> exportTopCommentedRoomsReport(
                         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
@@ -168,7 +168,7 @@ public class ReviewController {
                                         @SecurityRequirement(name = "bearerAuth") })
         @ApiResponses({ @ApiResponse(responseCode = "200", description = "Reporte generado correctamente") })
         @GetMapping("/report/rooms/most-commented")
-        @PreAuthorize("hasRole('CINEMA_ADMIN')")
+        @PreAuthorize("hasRole('ADMIN')")
         public TopCommentedRoomsReportResponse getTopCommentedRoomsReport(
                         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
