@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.sa.client_service.reviews.infrastructure.persistenceadapter.models.ReviewEntity;
 import com.sa.client_service.reviews.infrastructure.persistenceadapter.projections.RoomRatingStatsProjection;
+import com.sa.client_service.reviews.infrastructure.persistenceadapter.projections.RoomCommentsStatsProjection;
 
 public interface ReviewsRepository extends JpaRepository<ReviewEntity, UUID> {
 
@@ -81,4 +82,26 @@ public interface ReviewsRepository extends JpaRepository<ReviewEntity, UUID> {
       @Param("roomIds") List<UUID> roomIds,
       @Param("startDate") LocalDateTime startDate,
       @Param("endDate") LocalDateTime endDate);
+
+  @Query("""
+          SELECT new com.sa.client_service.reviews.infrastructure.persistenceadapter.projections.RoomCommentsStatsProjection(
+              r.roomId,
+              COUNT(r.id)
+          )
+          FROM ReviewEntity r
+          WHERE (
+                (CAST(:startDate AS date) IS NOT NULL AND CAST(:endDate AS date) IS NULL AND r.createdAt >= :startDate)
+             OR (CAST(:startDate AS date) IS NULL AND CAST(:endDate AS date) IS NOT NULL AND r.createdAt <= :endDate)
+             OR (CAST(:startDate AS date) IS NOT NULL AND CAST(:endDate AS date) IS NOT NULL AND r.createdAt BETWEEN :startDate AND :endDate)
+             OR (CAST(:startDate AS date) IS NULL AND CAST(:endDate AS date) IS NULL)
+          )
+            AND (COALESCE(:roomId, r.roomId) = r.roomId)
+          GROUP BY r.roomId
+          ORDER BY COUNT(r.id) DESC
+      """)
+  List<RoomCommentsStatsProjection> findTopRoomsByCommentsCount(
+      @Param("startDate") LocalDateTime startDate,
+      @Param("endDate") LocalDateTime endDate,
+      @Param("roomId") UUID roomId,
+      Pageable pageable);
 }

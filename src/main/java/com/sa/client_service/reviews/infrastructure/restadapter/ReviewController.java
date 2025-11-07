@@ -24,16 +24,20 @@ import com.sa.client_service.reviews.application.dtos.FindReviewsDTO;
 import com.sa.client_service.reviews.application.inputports.CreateReviewInputPort;
 import com.sa.client_service.reviews.application.inputports.ExportCommentReportPort;
 import com.sa.client_service.reviews.application.inputports.ExportTopLikedRoomsReportPort;
+import com.sa.client_service.reviews.application.inputports.ExportTopCommentedRoomsReportPort;
 import com.sa.client_service.reviews.application.inputports.FindReviewsInputPort;
 import com.sa.client_service.reviews.application.inputports.GetCinemaAdminCommentReportPort;
 import com.sa.client_service.reviews.application.inputports.GetTopLikedRoomsReportPort;
+import com.sa.client_service.reviews.application.inputports.GetTopCommentedRoomsReportPort;
 import com.sa.client_service.reviews.domain.Review;
+import com.sa.client_service.reviews.domain.TopCommentedRoomsReviews;
 import com.sa.client_service.reviews.domain.TopLikedRoomsReviews;
 import com.sa.client_service.reviews.infrastructure.restadapter.dtos.CommentReportResponse;
 import com.sa.client_service.reviews.infrastructure.restadapter.dtos.CreateReviewRequest;
 import com.sa.client_service.reviews.infrastructure.restadapter.dtos.FindReviewsRequest;
 import com.sa.client_service.reviews.infrastructure.restadapter.dtos.ReviewResponse;
 import com.sa.client_service.reviews.infrastructure.restadapter.dtos.TopLikedRoomsReportReponse;
+import com.sa.client_service.reviews.infrastructure.restadapter.dtos.TopCommentedRoomsReportResponse;
 import com.sa.client_service.reviews.infrastructure.restadapter.mappers.ReviewReportResponseMapper;
 import com.sa.client_service.reviews.infrastructure.restadapter.mappers.ReviewsRestMapper;
 
@@ -59,6 +63,8 @@ public class ReviewController {
         private final ExportCommentReportPort exportCommentReportPort;
         private final GetTopLikedRoomsReportPort getTopLikedRoomsReportPort;
         private final ExportTopLikedRoomsReportPort exportTopLikedRoomsReportPort;
+        private final GetTopCommentedRoomsReportPort getTopCommentedRoomsReportPort;
+        private final ExportTopCommentedRoomsReportPort exportTopCommentedRoomsReportPort;
 
         @Operation(summary = "Exportar a pdf reporte de comentarios de salas de cine", description = "Devuelve el PDF de los comentarios registrados dentro de un intervalo de fechas, "
                         + "con la opción de filtrar por una sala específica.", security = {
@@ -99,6 +105,25 @@ public class ReviewController {
                 return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
         }
 
+        @Operation(summary = "Exportar a pdf: Top 5 salas más comentadas", description = "Devuelve el PDF con el listado de comentarios de las salas más comentadas en el intervalo,"
+                        + " con opción de filtrar por una sala específica.", security = {
+                                        @SecurityRequirement(name = "bearerAuth") })
+        @ApiResponses({ @ApiResponse(responseCode = "200", description = "Reporte generado correctamente") })
+        @GetMapping("/export/rooms/most-commented")
+        @PreAuthorize("hasRole('CINEMA_ADMIN')")
+        public ResponseEntity<byte[]> exportTopCommentedRoomsReport(
+                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                        @RequestParam(required = false) UUID roomId) {
+
+                byte[] pdf = exportTopCommentedRoomsReportPort.exportTopCommentedRoomsReport(startDate, endDate, roomId,
+                                5);
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_PDF);
+                headers.setContentDispositionFormData("inline", "reporte_salas_mas_comentadas.pdf");
+                return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+        }
+
         @Operation(summary = "Obtener reporte de comentarios de salas de cine", description = "Devuelve los comentarios registrados dentro de un intervalo de fechas, "
                         + "con la opción de filtrar por una sala específica.", security = {
                                         @SecurityRequirement(name = "bearerAuth") })
@@ -136,6 +161,24 @@ public class ReviewController {
                                 reportResponseMapper.toRoomRatingStatsResponses(topLikedRoomsReviews.getTopStats()),
                                 reportResponseMapper.toTopLikedRoomsReportResponse(
                                                 topLikedRoomsReviews.getReviews()));
+        }
+
+        @Operation(summary = "Obtener Top 5 salas más comentadas", description = "Devuelve el listado de comentarios de las salas más comentadas"
+                        + " en el intervalo de fechas. Se puede filtrar opcionalmente por sala.", security = {
+                                        @SecurityRequirement(name = "bearerAuth") })
+        @ApiResponses({ @ApiResponse(responseCode = "200", description = "Reporte generado correctamente") })
+        @GetMapping("/report/rooms/most-commented")
+        @PreAuthorize("hasRole('CINEMA_ADMIN')")
+        public TopCommentedRoomsReportResponse getTopCommentedRoomsReport(
+                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                        @RequestParam(required = false) UUID roomId) {
+
+                TopCommentedRoomsReviews report = getTopCommentedRoomsReportPort.getTopCommentedRoomsReport(startDate,
+                                endDate, roomId, 5);
+                return new TopCommentedRoomsReportResponse(
+                                reportResponseMapper.toRoomCommentsStatsResponses(report.getTopStats()),
+                                reportResponseMapper.toReviewResponse(report.getReviews()));
         }
 
         @Operation(summary = "Crear una nueva reseña")

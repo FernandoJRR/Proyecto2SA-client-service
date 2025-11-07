@@ -14,11 +14,14 @@ import com.sa.client_service.reviews.application.dtos.FindReviewsDTO;
 import com.sa.client_service.reviews.application.outputports.FindReviewsByRoomIdPeriodPort;
 import com.sa.client_service.reviews.application.outputports.FindReviewsOutputPort;
 import com.sa.client_service.reviews.application.outputports.FindTopLikedRoomsReviewsPort;
+import com.sa.client_service.reviews.application.outputports.FindTopCommentedRoomsReviewsPort;
 import com.sa.client_service.reviews.domain.Review;
 import com.sa.client_service.reviews.domain.TopLikedRoomsReviews;
+import com.sa.client_service.reviews.domain.TopCommentedRoomsReviews;
 import com.sa.client_service.reviews.infrastructure.persistenceadapter.mappers.ReviewsRepositoryMapper;
 import com.sa.client_service.reviews.infrastructure.persistenceadapter.models.ReviewEntity;
 import com.sa.client_service.reviews.infrastructure.persistenceadapter.projections.RoomRatingStatsProjection;
+import com.sa.client_service.reviews.infrastructure.persistenceadapter.projections.RoomCommentsStatsProjection;
 import com.sa.client_service.reviews.infrastructure.persistenceadapter.repositories.ReviewsRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -26,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class FindReviewsAdapter implements FindReviewsOutputPort, FindReviewsByRoomIdPeriodPort,
-        FindTopLikedRoomsReviewsPort {
+        FindTopLikedRoomsReviewsPort, FindTopCommentedRoomsReviewsPort {
 
     private static final ReviewsRepositoryMapper MAPPER = ReviewsRepositoryMapper.INSTANCE;
 
@@ -84,6 +87,33 @@ public class FindReviewsAdapter implements FindReviewsOutputPort, FindReviewsByR
                 endDateTime);
 
         return new TopLikedRoomsReviews(topStats, MAPPER.toDomain(entities));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public TopCommentedRoomsReviews findTopCommentedRoomsReviews(LocalDate startDate, LocalDate endDate, UUID roomId,
+            Integer limit) {
+        int effectiveLimit = limit == null || limit <= 0 ? 5 : limit;
+
+        LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
+        LocalDateTime endDateTime = endDate != null ? endDate.atTime(LocalTime.MAX) : null;
+
+        List<RoomCommentsStatsProjection> topStats = reviewsRepository.findTopRoomsByCommentsCount(startDateTime,
+                endDateTime, roomId, PageRequest.of(0, effectiveLimit));
+
+        if (topStats.isEmpty()) {
+            return new TopCommentedRoomsReviews(List.of(), List.of());
+        }
+
+        List<UUID> topRoomIds = topStats.stream().map(RoomCommentsStatsProjection::roomId).toList();
+
+        List<ReviewEntity> entities = reviewsRepository.findByRoomIdsAndDateRange(topRoomIds, startDateTime,
+                endDateTime);
+
+        return new TopCommentedRoomsReviews(topStats, MAPPER.toDomain(entities));
     }
 
 }

@@ -14,9 +14,11 @@ import com.sa.client_service.common.infrastructure.web.CinemaServiceClient;
 import com.sa.client_service.common.infrastructure.web.UserServiceClient;
 import com.sa.client_service.reviews.domain.Review;
 import com.sa.client_service.reviews.infrastructure.persistenceadapter.projections.RoomRatingStatsProjection;
+import com.sa.client_service.reviews.infrastructure.persistenceadapter.projections.RoomCommentsStatsProjection;
 import com.sa.client_service.reviews.infrastructure.restadapter.dtos.CommentReportResponse;
 import com.sa.client_service.reviews.infrastructure.restadapter.dtos.RoomRatingStatsResponse;
 import com.sa.client_service.reviews.infrastructure.restadapter.dtos.LikedRoomReportResponse;
+import com.sa.client_service.reviews.infrastructure.restadapter.dtos.RoomCommentsStatsResponse;
 import com.sap.common_lib.util.DateUtils;
 import com.sap.common_lib.util.SafeFetcher;
 
@@ -41,8 +43,11 @@ public abstract class ReviewReportResponseMapper {
 
         public abstract List<LikedRoomReportResponse> toTopLikedRoomsReportResponse(List<Review> reviews);
 
-        public abstract List<RoomRatingStatsResponse> toRoomRatingStatsResponses(
+    public abstract List<RoomRatingStatsResponse> toRoomRatingStatsResponses(
                         List<RoomRatingStatsProjection> reviews);
+
+    public abstract List<RoomCommentsStatsResponse> toRoomCommentsStatsResponses(
+                        List<RoomCommentsStatsProjection> reviews);
 
         /**
          * Convierte una entidad de dominio {@link Review} en un DTO de respuesta
@@ -62,7 +67,10 @@ public abstract class ReviewReportResponseMapper {
         public abstract LikedRoomReportResponse toTopLikedRoomsReportResponse(Review review);
 
         @Mapping(target = "roomName", ignore = true)
-        public abstract RoomRatingStatsResponse toTopLikedRoomsReportResponse(RoomRatingStatsProjection projection);
+    public abstract RoomRatingStatsResponse toTopLikedRoomsReportResponse(RoomRatingStatsProjection projection);
+
+    @Mapping(target = "roomName", ignore = true)
+    public abstract RoomCommentsStatsResponse toRoomCommentsStatsResponse(RoomCommentsStatsProjection projection);
 
         /**
          * Enriquecimiento de datos posterior al mapeo.
@@ -113,6 +121,14 @@ public abstract class ReviewReportResponseMapper {
                                 () -> cinemaServiceClient.getCinemaHallById(review.roomId()),
                                 () -> new CinemaHallView(null, "Desconocido"));
 
+                target.setRoomName(hall.getName());
+        }
+
+        @AfterMapping
+        protected void after(RoomCommentsStatsProjection review, @MappingTarget RoomCommentsStatsResponse target) {
+                CinemaHallView hall = SafeFetcher.run(
+                                () -> cinemaServiceClient.getCinemaHallById(review.roomId()),
+                                () -> new CinemaHallView(null, "Desconocido"));
                 target.setRoomName(hall.getName());
         }
 }
