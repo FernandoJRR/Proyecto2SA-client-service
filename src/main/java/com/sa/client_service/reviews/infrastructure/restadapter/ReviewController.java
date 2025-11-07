@@ -90,10 +90,9 @@ public class ReviewController {
         public ResponseEntity<byte[]> exportTopLikedRoomsReport(
                         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-                        @RequestParam(required = false) UUID roomId,
-                        @RequestParam(required = false, defaultValue = "5") Integer limit) {
+                        @RequestParam(required = false) UUID roomId) {
 
-                byte[] pdf = exportTopLikedRoomsReportPort.exportTopLikedRoomsReport(startDate, endDate, roomId, limit);
+                byte[] pdf = exportTopLikedRoomsReportPort.exportTopLikedRoomsReport(startDate, endDate, roomId, 5);
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_PDF);
                 headers.setContentDispositionFormData("inline", "reporte_salas_mas_gustadas.pdf");
