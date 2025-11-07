@@ -8,8 +8,9 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 
 import com.sa.client_service.reviews.application.outputports.ExportPdfTopLikedRoomsReportPort;
-import com.sa.client_service.reviews.domain.Review;
+import com.sa.client_service.reviews.domain.TopLikedRoomsReviews;
 import com.sa.client_service.reviews.infrastructure.restadapter.dtos.LikedRoomReportResponse;
+import com.sa.client_service.reviews.infrastructure.restadapter.dtos.RoomRatingStatsResponse;
 import com.sa.client_service.reviews.infrastructure.restadapter.mappers.ReviewReportResponseMapper;
 import com.sap.common_lib.util.DateUtils;
 import com.sap.common_lib.util.PdfPrinter;
@@ -35,16 +36,21 @@ public class ExportTopLikedRoomsPdfAdapter implements ExportPdfTopLikedRoomsRepo
      * {@inheritDoc}
      */
     @Override
-    public byte[] exportPdf(List<Review> report, LocalDate startDate, LocalDate endDate) {
+    public byte[] exportPdf(TopLikedRoomsReviews topLikedRoomsReviews, LocalDate startDate, LocalDate endDate) {
         // Convierte las entidades del dominio en objetos de respuesta para el reporte
-        List<LikedRoomReportResponse> rows = mapper.toTopLikedRoomsReportResponse(report);
+        List<LikedRoomReportResponse> rows = mapper.toTopLikedRoomsReportResponse(
+                topLikedRoomsReviews.getReviews());
+        List<RoomRatingStatsResponse> stats = mapper.toRoomRatingStatsResponses(
+                topLikedRoomsReviews.getTopStats());
 
         // Fuente de datos para JasperReports
         JRBeanArrayDataSource table = new JRBeanArrayDataSource(rows.toArray());
+        JRBeanArrayDataSource statsArrayDataSource = new JRBeanArrayDataSource(stats.toArray());
 
         // Parámetros del reporte
         Map<String, Object> params = new HashMap<>();
         params.put("table", table);
+        params.put("stats", statsArrayDataSource);
         params.put("startDate", startDate != null ? DateUtils.format(startDate) : "-");
         params.put("endDate", endDate != null ? DateUtils.format(endDate) : "-");
 

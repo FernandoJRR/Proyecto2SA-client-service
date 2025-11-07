@@ -36,6 +36,6 @@ public class ExportTopLikedRoomsReportUseCase implements ExportTopLikedRoomsRepo
                 endDate, roomId, limit);
 
         // Exporta la información obtenida a un archivo PDF
-        return exportPdfPort.exportPdf(topLikedRoomsReviews.getReviews(), startDate, endDate);
+        return exportPdfPort.exportPdf(topLikedRoomsReviews, startDate, endDate);
     }
 }

@@ -1,9 +1,9 @@
 package com.sa.client_service.reviews.application.outputports;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import com.sa.client_service.reviews.domain.Review;
+import com.sa.client_service.reviews.domain.TopLikedRoomsReviews;
 
 /**
  * Puerto de salida encargado de la exportación del reporte de salas más
@@ -26,5 +26,5 @@ public interface ExportPdfTopLikedRoomsReportPort {
      * @param endDate   fecha final del intervalo del reporte
      * @return un arreglo de bytes que representa el archivo PDF generado
      */
-    byte[] exportPdf(List<Review> report, LocalDate startDate, LocalDate endDate);
+    byte[] exportPdf(  TopLikedRoomsReviews topLikedRoomsReviews, LocalDate startDate, LocalDate endDate);
 }
