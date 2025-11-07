@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -42,6 +43,8 @@ public abstract class ReviewReportResponseMapper {
      * @param review entidad del dominio a convertir
      * @return respuesta de reporte de comentario
      */
+    @Mapping(target = "clientEmail", ignore = true)
+    @Mapping(target = "roomName", ignore = true)
     public abstract CommentReportResponse toReviewResponse(Review review);
 
     /**

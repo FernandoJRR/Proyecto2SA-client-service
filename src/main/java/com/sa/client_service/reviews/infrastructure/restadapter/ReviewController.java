@@ -6,8 +6,10 @@ import java.util.UUID;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sa.client_service.reviews.application.dtos.CreateReviewDTO;
 import com.sa.client_service.reviews.application.dtos.FindReviewsDTO;
 import com.sa.client_service.reviews.application.inputports.CreateReviewInputPort;
+import com.sa.client_service.reviews.application.inputports.ExportCommentReportPort;
 import com.sa.client_service.reviews.application.inputports.FindReviewsInputPort;
 import com.sa.client_service.reviews.application.inputports.GetCinemaAdminCommentReportPort;
 import com.sa.client_service.reviews.domain.Review;
@@ -49,6 +52,28 @@ public class ReviewController {
         private final FindReviewsInputPort findReviewsInputPort;
         private final GetCinemaAdminCommentReportPort getCinemaAdminCommentReportPort;
         private final ReviewReportResponseMapper reportResponseMapper;
+        private final ExportCommentReportPort exportCommentReportPort;
+
+        @Operation(summary = "Exportar a pdf reporte de comentarios de salas de cine", description = "Devuelve el PDF de los comentarios registrados dentro de un intervalo de fechas, "
+                        + "con la opción de filtrar por una sala específica.", security = {
+                                        @SecurityRequirement(name = "bearerAuth") })
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Reporte de comentarios generado correctamente")
+        })
+        @GetMapping("/export/comments")
+        @PreAuthorize("hasRole('CINEMA_ADMIN')")
+        public ResponseEntity<byte[]> exportCinemaAdminCommentReport(
+                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                        @RequestParam(required = false) UUID roomId) {
+
+                byte[] reviews = exportCommentReportPort.exportCinemaAdminCommentReport(startDate, endDate,
+                                roomId);
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_PDF);
+                headers.setContentDispositionFormData("inline", "reporte_comentarios.pdf");
+                return new ResponseEntity<>(reviews, headers, HttpStatus.OK);
+        }
 
         @Operation(summary = "Obtener reporte de comentarios de salas de cine", description = "Devuelve los comentarios registrados dentro de un intervalo de fechas, "
                         + "con la opción de filtrar por una sala específica.", security = {
@@ -57,6 +82,7 @@ public class ReviewController {
                         @ApiResponse(responseCode = "200", description = "Reporte de comentarios generado correctamente")
         })
         @GetMapping("/report/comments")
+        @PreAuthorize("hasRole('CINEMA_ADMIN')")
         public List<CommentReportResponse> getCinemaAdminCommentReport(
                         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
